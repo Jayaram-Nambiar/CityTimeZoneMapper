@@ -19,21 +19,29 @@ def normalize(value: str) -> str:
     return " ".join(value.strip().lower().split())
 
 
+def _city_names(entry: dict[str, Any]) -> list[str]:
+    names = [entry["city"], *entry.get("aliases", [])]
+    return [normalize(name) for name in names if name]
+
+
 def find_offline_match(city: str, country: str) -> dict[str, Any] | None:
     """Exact then fuzzy-ish match against the bundled city catalog."""
     city_n = normalize(city)
     country_n = normalize(country)
     cities = load_offline_cities()
 
+    def country_ok(entry: dict[str, Any]) -> bool:
+        return (
+            normalize(entry["country"]) == country_n
+            or normalize(entry.get("country_code", "")) == country_n
+            or country_n in normalize(entry["country"])
+            or normalize(entry["country"]) in country_n
+        )
+
     exact = [
         c
         for c in cities
-        if normalize(c["city"]) == city_n
-        and (
-            normalize(c["country"]) == country_n
-            or normalize(c.get("country_code", "")) == country_n
-            or country_n in normalize(c["country"])
-        )
+        if city_n in _city_names(c) and country_ok(c)
     ]
     if exact:
         return exact[0]
@@ -41,21 +49,17 @@ def find_offline_match(city: str, country: str) -> dict[str, Any] | None:
     city_partial = [
         c
         for c in cities
-        if city_n in normalize(c["city"]) or normalize(c["city"]) in city_n
+        if any(
+            city_n in name or name in city_n
+            for name in _city_names(c)
+        )
     ]
-    country_filtered = [
-        c
-        for c in city_partial
-        if country_n in normalize(c["country"])
-        or normalize(c.get("country_code", "")) == country_n
-        or normalize(c["country"]) in country_n
-    ]
+    country_filtered = [c for c in city_partial if country_ok(c)]
     pool = country_filtered or city_partial
     if not pool:
         return None
 
-    # Prefer shortest city-name distance (simple heuristic).
-    pool.sort(key=lambda c: abs(len(normalize(c["city"])) - len(city_n)))
+    pool.sort(key=lambda c: min(abs(len(name) - len(city_n)) for name in _city_names(c)))
     return pool[0]
 
 

@@ -44,22 +44,40 @@ export default function App() {
     setCopied("");
 
     try {
-      const response = await fetch("/api/resolve", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          city: city.trim(),
-          country: country.trim(),
-          prefer_source: preferSource,
-        }),
-      });
+      const controller = new AbortController();
+      const timer = window.setTimeout(() => controller.abort(), 55000);
+      let response;
+      try {
+        response = await fetch("/api/resolve", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            city: city.trim(),
+            country: country.trim(),
+            prefer_source: preferSource,
+          }),
+          signal: controller.signal,
+        });
+      } finally {
+        window.clearTimeout(timer);
+      }
       const payload = await response.json();
       if (!response.ok) {
-        throw new Error(payload.detail || "Lookup failed");
+        throw new Error(
+          typeof payload.detail === "string"
+            ? payload.detail
+            : "Lookup failed",
+        );
       }
       setResult(payload);
     } catch (err) {
-      setError(err.message || "Unable to resolve timezone");
+      if (err?.name === "AbortError") {
+        setError(
+          "Lookup timed out. On free hosting the first request after idle can be slow — wait a few seconds and try again.",
+        );
+      } else {
+        setError(err.message || "Unable to resolve timezone");
+      }
     } finally {
       setLoading(false);
     }

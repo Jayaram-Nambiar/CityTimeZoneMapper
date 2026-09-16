@@ -38,7 +38,8 @@ async def resolve_timezone(
             notes.append(f"Online geocoding failed ({exc.__class__.__name__}).")
             if prefer_source == "online":
                 raise ResolveError(
-                    "Online resolution failed and offline fallback was not requested.",
+                    "Online resolution failed and offline fallback was not requested. "
+                    f"({exc.__class__.__name__})",
                     status_code=502,
                 ) from exc
 
@@ -49,9 +50,10 @@ async def resolve_timezone(
     if offline:
         return offline
 
-    raise ResolveError(
-        "Could not resolve timezone for that city and country via online or offline methods."
-    )
+    detail = "Could not resolve timezone for that city and country via online or offline methods."
+    if notes:
+        detail = f"{detail} {' '.join(notes)}"
+    raise ResolveError(detail)
 
 
 async def _resolve_online(

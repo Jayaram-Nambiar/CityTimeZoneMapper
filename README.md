@@ -26,7 +26,8 @@ Private GitHub repo: [Jayaram-Nambiar/CityTimeZoneMapper](https://github.com/Jay
 10. [Architecture decisions (why we built it this way)](#10-architecture-decisions-why-we-built-it-this-way)
 11. [Troubleshooting](#11-troubleshooting)
 12. [Further reading](#12-further-reading)
-13. [License](#13-license)
+13. [Host on the public internet](#13-host-on-the-public-internet)
+14. [License](#14-license)
 
 ---
 
@@ -320,26 +321,23 @@ Ready-made Python client sample: [`examples/python_client_demo.py`](examples/pyt
 
 ```text
 CityTimeZoneMapper/
-├── README.md                 ← you are here
+├── README.md
 ├── LICENSE
+├── Dockerfile                ← production image (UI build + API)
+├── render.yaml               ← free Render Blueprint
 ├── docs/
-│   ├── API.md                ← OpenAPI access + programmatic examples
-│   ├── USER_GUIDE.md         ← how to use the UI / interpret results
-│   └── ARCHITECTURE.md       ← design decisions & tradeoffs
+│   ├── API.md
+│   ├── USER_GUIDE.md
+│   ├── ARCHITECTURE.md
+│   └── DEPLOY.md             ← public hosting walkthrough
 ├── backend/
 │   ├── requirements.txt
 │   └── app/
-│       ├── main.py           ← FastAPI entrypoint
-│       ├── models.py         ← request/response schemas (API contract)
-│       ├── data/
-│       │   └── cities_offline.json
-│       └── services/         ← geocoding, offline match, zoneinfo bridge
-├── frontend/
-│   ├── package.json
-│   ├── vite.config.js        ← proxies /api → :8001 in dev
-│   └── src/
-│       ├── App.jsx
-│       └── index.css
+│       ├── main.py           ← API + serves frontend/dist in production
+│       ├── models.py
+│       ├── data/cities_offline.json
+│       └── services/
+├── frontend/                 ← Vite/React (dev server or production build)
 └── examples/
     └── python_client_demo.py
 ```
@@ -380,6 +378,7 @@ Short version below; full discussion is in [`docs/ARCHITECTURE.md`](docs/ARCHITE
 - [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) — end-user guide  
 - [`docs/API.md`](docs/API.md) — OpenAPI contracts + programmatic clients  
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — deeper design rationale  
+- [`docs/DEPLOY.md`](docs/DEPLOY.md) — public hosting (Render / Docker)  
 - Live Swagger UI (backend running): http://127.0.0.1:8001/docs  
 - OpenAPI JSON: http://127.0.0.1:8001/openapi.json  
 - [Python `zoneinfo`](https://docs.python.org/3/library/zoneinfo.html)  
@@ -388,6 +387,22 @@ Short version below; full discussion is in [`docs/ARCHITECTURE.md`](docs/ARCHITE
 
 ---
 
-## 13. License
+## 13. Host on the public internet
+
+Vite does **not** host websites. This repo is set up so a **Vite production build** is served by FastAPI in one container — one public URL for humans and for API clients.
+
+**Fastest free path:** deploy the included [`render.yaml`](render.yaml) + [`Dockerfile`](Dockerfile) on [Render](https://render.com)’s free tier.
+
+Step-by-step: **[`docs/DEPLOY.md`](docs/DEPLOY.md)**
+
+After deploy, share:
+
+- App UI → `https://<your-service>.onrender.com/`
+- API docs → `https://<your-service>.onrender.com/docs`
+- OpenAPI → `https://<your-service>.onrender.com/openapi.json`
+
+---
+
+## 14. License
 
 MIT — see [`LICENSE`](LICENSE).

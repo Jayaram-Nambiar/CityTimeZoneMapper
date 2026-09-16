@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: city-timezone-mapper
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: PYTHON_VERSION
+        value: "3.11.9"

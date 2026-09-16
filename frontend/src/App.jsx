@@ -109,9 +109,9 @@ export default function App() {
               </>
             ) : (
               <>
-                <span className="status-short">Waiting for API on :8001</span>
+                <span className="status-short">Waiting for API…</span>
                 <span className="status-full">
-                  Waiting for API… start the FastAPI backend on :8001
+                  Waiting for API… start the backend (local: port 8001)
                 </span>
               </>
             )}

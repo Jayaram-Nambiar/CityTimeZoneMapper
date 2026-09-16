@@ -74,31 +74,27 @@ Implemented primarily in `backend/app/services/resolver.py`.
 
 ### 4.1 Online path
 
-1. **Geocode** with OpenStreetMap Nominatim (`nominatim.py`)  
-2. **Map coordinates → timezone** with `timezonefinder` (`geo_timezone.py`)  
+1. **Geocode** with a cloud-tolerant provider chain (`geocoding.py`):
+   1. **Open-Meteo** (GeoNames-backed, free, returns timezone often)
+   2. **Photon** (Komoot; OSM-based)
+   3. **Nominatim** (public OSM instance — last resort)
+2. **Map coordinates → timezone** with `timezonefinder` (`geo_timezone.py`)
 3. **Enrich** with `zoneinfo`/`pytz` metadata (`library_bridge.py`)
 
-**Why Nominatim?**
+**Root cause of “works locally, fails on Render”**
 
-- Free for light use, open data, no API key for the public instance  
-- Structured `city` + `country` queries fit our form  
+Public Nominatim aggressively rate-limits and sometimes blocks **datacenter IPs**. A home/laptop IP often succeeds while the same code on Render fails or times out, then offline fallback only helps if the city is in the catalog. That is an online-path reliability bug, not a missing offline alias.
 
-**Why not a paid “city → timezone” API?**
+**Why not Nominatim-only?**
 
-- Unnecessary cost for a friend/demo project  
-- Creates key management and vendor lock-in  
+- Free for light personal use, but unsuitable as the sole production geocoder from cloud hosts
+- Structured `city` + `country` queries are fine when the instance cooperates
 
-**Why timezonefinder instead of another HTTP timezone API?**
+**Why Open-Meteo / Photon first?**
 
-- Offline polygon dataset; works after geocoding even if a second HTTP service is down  
-- Deterministic, fast after first load  
-- Avoids stacking multiple external rate limits
-
-**Nominatim responsibilities we accept**
-
-- Must send a descriptive `User-Agent`  
-- Must not bulk-scrape  
-- Occasional downtime / rate limiting → hence offline fallback  
+- Explicitly usable as HTTP APIs from servers
+- Still free for this project’s scope
+- Avoid stacking a second paid vendor
 
 ### 4.2 Offline path
 

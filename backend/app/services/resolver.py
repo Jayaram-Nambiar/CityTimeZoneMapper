@@ -4,8 +4,12 @@ import httpx
 
 from app.models import Coordinates, ResolveResponse
 from app.services.geo_timezone import timezone_from_coordinates
+from app.services.geocoding import (
+    geocode_city_country,
+    is_geocode_hit,
+    provider_errors,
+)
 from app.services.library_bridge import build_library_mapping
-from app.services.nominatim import geocode_city_country
 from app.services.offline import find_offline_match
 
 
@@ -62,15 +66,33 @@ async def _resolve_online(
     notes: list[str],
 ) -> ResolveResponse | None:
     geo = await geocode_city_country(city, country)
-    if not geo:
+    if not is_geocode_hit(geo):
+        for item in provider_errors(geo):
+            notes.append(item)
         return None
 
-    tz_id = timezone_from_coordinates(geo["latitude"], geo["longitude"])
+    assert geo is not None  # for type checkers; guarded by is_geocode_hit
+    provider = geo.get("provider", "online")
+    tz_id = geo.get("timezone") or timezone_from_coordinates(
+        geo["latitude"],
+        geo["longitude"],
+    )
+    if not tz_id:
+        # Provider may omit timezone; always try polygon lookup as backup.
+        tz_id = timezone_from_coordinates(geo["latitude"], geo["longitude"])
     if not tz_id:
         notes.append("Coordinates found, but no timezone polygon matched.")
         return None
 
-    notes.append("Resolved via OpenStreetMap Nominatim + timezonefinder.")
+    # If provider supplied a timezone, still prefer recomputed polygon when available
+    # so bad provider TZ strings cannot poison the contract.
+    computed = timezone_from_coordinates(geo["latitude"], geo["longitude"])
+    if computed:
+        tz_id = computed
+
+    notes.append(
+        f"Resolved online via {provider} geocoding + timezonefinder."
+    )
     return ResolveResponse(
         city=city,
         country=country,
@@ -106,7 +128,6 @@ def _resolve_offline(
     if not tz_id:
         return None
 
-    # Prefer recomputing from coordinates when present (keeps data honest).
     if lat is not None and lon is not None:
         computed = timezone_from_coordinates(float(lat), float(lon))
         if computed:
@@ -119,7 +140,8 @@ def _resolve_offline(
 
     from app.services.offline import normalize
 
-    exact = normalize(match["city"]) == normalize(city) and (
+    names = [normalize(match["city"]), *[normalize(a) for a in match.get("aliases", [])]]
+    exact = normalize(city) in names and (
         normalize(match["country"]) == normalize(country)
         or normalize(match.get("country_code", "")) == normalize(country)
     )

@@ -32,8 +32,8 @@ Anyone with that link can use the app. API contracts stay at:
 ### Free-tier notes
 
 - The free instance **sleeps after idle**. The first visit after a nap can take ~30–60 seconds.
-- The first **Resolve** after wake can also fail briefly if OpenStreetMap Nominatim is slow or rate-limits cloud IPs — wait a few seconds and retry. Offline catalog covers major cities (including aliases like Cochin → Kochi) when online geocoding is unavailable.
-- Nominatim (online geocoding) has fair-use limits — fine for personal/friend use, not bulk jobs.
+- Online geocoding uses **Open-Meteo → Photon → Nominatim**. Public Nominatim alone often fails from cloud IPs (the usual “works on my laptop” trap); the multi-provider chain is the real fix.
+- Offline catalog remains a last resort for major cities when every online provider is unreachable.
 - Keep the GitHub repo private if you want; Render can still deploy after you grant access.
 
 ### Redeploy after changes

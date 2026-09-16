@@ -47,7 +47,7 @@ If you want **design rationale in depth**, read [`docs/ARCHITECTURE.md`](docs/AR
 
 | Capability | Details |
 | --- | --- |
-| Online resolution | OpenStreetMap **Nominatim** (geocode city/country → lat/lon) + **timezonefinder** (lat/lon → IANA id) |
+| Online resolution | **Open-Meteo** → **Photon** → Nominatim (last resort) for geocoding, then **timezonefinder** for IANA id. Public Nominatim alone is unreliable from cloud hosts. |
 | Offline fallback | Bundled major-city catalog (`cities_offline.json`) + timezonefinder |
 | Python mapping | Response includes usage for `zoneinfo`/`tzdata` (recommended) and `pytz` (legacy) |
 | UI | Responsive React app (desktop + mobile browsers) |
@@ -67,7 +67,7 @@ City + Country
 │ prefer_source=auto  │  (default)
 └──────────┬──────────┘
            │
-     try online ──► Nominatim geocode ──► timezonefinder ──► IANA id
+     try online ──► Open-Meteo / Photon / Nominatim ──► timezonefinder ──► IANA id
            │                                      │
            │ fail / no match                      │
            ▼                                      ▼
@@ -351,7 +351,7 @@ Short version below; full discussion is in [`docs/ARCHITECTURE.md`](docs/ARCHITE
 | --- | --- |
 | **FastAPI + React** | Clear split: JSON API for machines, polished UI for humans. Easy to call from Python scripts too. |
 | **IANA timezone ids as the contract** | Portable across `zoneinfo`, `pytz`, Java, databases, calendars. |
-| **Nominatim (free) + timezonefinder** | Avoid paid keys; use open geocoding then local TZ polygons. |
+| **Open-Meteo → Photon → Nominatim + timezonefinder** | Public Nominatim alone is often rate-limited/blocked from cloud IPs (works on a laptop, fails on Render). Cloud-friendly geocoders first; Nominatim last; offline catalog remains the final fallback. |
 | **Offline city catalog fallback** | App still useful when the network or Nominatim is unavailable. |
 | **`zoneinfo` + `tzdata` preferred over `pytz`** | Official recommendation for new Python 3.9+ code; `pytz` kept for migration/comparison. |
 | **Vite proxy in development** | Browser calls `/api/...` same-origin; no CORS pain during local work. |

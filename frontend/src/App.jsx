@@ -324,9 +324,9 @@ now = datetime.now(tz)`}</pre>
 
       <footer className="footer">
         <p>
-          Online path uses OpenStreetMap Nominatim + timezonefinder. Offline
-          path uses a bundled city catalog. New Python code should prefer{" "}
-          <code>zoneinfo</code> with <code>tzdata</code>.
+          Online path uses Open-Meteo / Photon (Nominatim last) plus
+          timezonefinder. Offline path uses a bundled city catalog. New Python
+          code should prefer <code>zoneinfo</code> with <code>tzdata</code>.
         </p>
       </footer>
     </div>

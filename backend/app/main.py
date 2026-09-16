@@ -12,7 +12,7 @@ from app.services.offline import offline_city_count
 from app.services.resolver import ResolveError, resolve_timezone
 
 app = FastAPI(
-    title="City Time Zone Mapper",
+    title="City Timezone Mapper",
     description=(
         "Resolve a city + country to an IANA timezone id, with mappings for "
         "Python zoneinfo (recommended) and pytz."
@@ -65,7 +65,7 @@ async def resolve(payload: ResolveRequest) -> ResolveResponse:
 @app.get("/")
 def root() -> dict[str, str]:
     return {
-        "service": "City Time Zone Mapper",
+        "service": "City Timezone Mapper",
         "docs": "/docs",
         "health": "/api/health",
         "resolve": "POST /api/resolve",

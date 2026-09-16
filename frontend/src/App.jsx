@@ -66,9 +66,25 @@ export default function App() {
   }
 
   async function copyText(label, value) {
-    await navigator.clipboard.writeText(value);
-    setCopied(label);
-    window.setTimeout(() => setCopied(""), 1600);
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(value);
+      } else {
+        const area = document.createElement("textarea");
+        area.value = value;
+        area.setAttribute("readonly", "");
+        area.style.position = "fixed";
+        area.style.left = "-9999px";
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand("copy");
+        document.body.removeChild(area);
+      }
+      setCopied(label);
+      window.setTimeout(() => setCopied(""), 1600);
+    } catch {
+      setError("Copy failed — select the text manually instead.");
+    }
   }
 
   return (
@@ -81,16 +97,31 @@ export default function App() {
         <div>
           <p className="eyebrow">City → IANA → Python</p>
           <p className="status-line">
-            {health
-              ? `API online · ${health.offline_cities} offline cities · zoneinfo ${health.zoneinfo_available ? "ready" : "missing"}`
-                  : "Waiting for API… start the FastAPI backend on :8001"}
+            {health ? (
+              <>
+                <span className="status-short">
+                  API online · {health.offline_cities} cities
+                </span>
+                <span className="status-full">
+                  API online · {health.offline_cities} offline cities · zoneinfo{" "}
+                  {health.zoneinfo_available ? "ready" : "missing"}
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="status-short">Waiting for API on :8001</span>
+                <span className="status-full">
+                  Waiting for API… start the FastAPI backend on :8001
+                </span>
+              </>
+            )}
           </p>
         </div>
       </header>
 
       <main className="shell">
         <section className="hero">
-          <h1 className="brand">CityTimeZoneMapper</h1>
+          <h1 className="brand">City Timezone Mapper</h1>
           <p className="lede">
             Enter a city and country. Get an IANA timezone id ready for
             Python&nbsp;3.9+ <code>zoneinfo</code> and <code>tzdata</code>,
@@ -106,6 +137,8 @@ export default function App() {
                 placeholder="e.g. Munich"
                 required
                 autoComplete="address-level2"
+                enterKeyHint="next"
+                spellCheck={false}
               />
             </label>
             <label className="field">
@@ -116,6 +149,8 @@ export default function App() {
                 placeholder="e.g. Germany"
                 required
                 autoComplete="country-name"
+                enterKeyHint="go"
+                spellCheck={false}
               />
             </label>
             <label className="field">
@@ -123,6 +158,7 @@ export default function App() {
               <select
                 value={preferSource}
                 onChange={(e) => setPreferSource(e.target.value)}
+                aria-label="Lookup source preference"
               >
                 <option value="auto">Auto (online, then offline)</option>
                 <option value="online">Online only (Nominatim)</option>

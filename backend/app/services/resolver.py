@@ -66,29 +66,20 @@ async def _resolve_online(
     notes: list[str],
 ) -> ResolveResponse | None:
     geo = await geocode_city_country(city, country)
-    if not is_geocode_hit(geo):
+    if geo is None or not is_geocode_hit(geo):
         for item in provider_errors(geo):
             notes.append(item)
         return None
 
-    assert geo is not None  # for type checkers; guarded by is_geocode_hit
-    provider = geo.get("provider", "online")
-    tz_id = geo.get("timezone") or timezone_from_coordinates(
-        geo["latitude"],
-        geo["longitude"],
-    )
-    if not tz_id:
-        # Provider may omit timezone; always try polygon lookup as backup.
-        tz_id = timezone_from_coordinates(geo["latitude"], geo["longitude"])
+    provider = str(geo.get("provider") or "online")
+    latitude = float(geo["latitude"])
+    longitude = float(geo["longitude"])
+    # Prefer timezonefinder over provider-supplied TZ strings so the IANA contract
+    # stays consistent even if an upstream geocoder returns a stale/odd zone id.
+    tz_id = timezone_from_coordinates(latitude, longitude) or geo.get("timezone")
     if not tz_id:
         notes.append("Coordinates found, but no timezone polygon matched.")
         return None
-
-    # If provider supplied a timezone, still prefer recomputed polygon when available
-    # so bad provider TZ strings cannot poison the contract.
-    computed = timezone_from_coordinates(geo["latitude"], geo["longitude"])
-    if computed:
-        tz_id = computed
 
     notes.append(
         f"Resolved online via {provider} geocoding + timezonefinder."
@@ -96,15 +87,15 @@ async def _resolve_online(
     return ResolveResponse(
         city=city,
         country=country,
-        matched_name=geo["display_name"],
-        timezone=tz_id,
+        matched_name=str(geo.get("display_name") or f"{city}, {country}"),
+        timezone=str(tz_id),
         coordinates=Coordinates(
-            latitude=geo["latitude"],
-            longitude=geo["longitude"],
+            latitude=latitude,
+            longitude=longitude,
         ),
         source="online",
         confidence="high",
-        libraries=build_library_mapping(tz_id),
+        libraries=build_library_mapping(str(tz_id)),
         notes=notes,
     )
 

@@ -1,12 +1,13 @@
-# Architecture — City Time Zone Mapper
+# Architecture — City Timezone Mapper
 
 This document explains **why** the project is structured the way it is: the problem constraints, the major design choices, alternatives we rejected, and the tradeoffs you should know before changing things.
 
 It complements:
 
 - [`README.md`](../README.md) — overview + local setup  
-- [`USER_GUIDE.md`](USER_GUIDE.md) — how to use the product  
 - [`API.md`](API.md) — OpenAPI contracts and programmatic clients  
+- [`DEPLOY.md`](DEPLOY.md) — public hosting  
+- [`THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md) — dependency attribution  
 
 ---
 

@@ -1,1 +1,1 @@
-"""City Time Zone Mapper backend package."""
+"""City Timezone Mapper backend package."""

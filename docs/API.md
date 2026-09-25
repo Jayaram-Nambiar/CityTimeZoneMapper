@@ -1,6 +1,6 @@
 # API contracts — programmatic use
 
-City Time Zone Mapper exposes a small **HTTP JSON API**. The UI is only one client; any language that can make HTTP requests can use the same contracts.
+City Timezone Mapper exposes a small **HTTP JSON API**. The UI is only one client; any language that can make HTTP requests can use the same contracts.
 
 Base URL when running locally:
 
@@ -218,5 +218,6 @@ Invoke-RestMethod -Method Post `
 ## 5. Related docs
 
 - Setup: [`README.md`](../README.md)  
-- End-user UI: [`USER_GUIDE.md`](USER_GUIDE.md)  
 - Design rationale: [`ARCHITECTURE.md`](ARCHITECTURE.md)  
+- Hosting: [`DEPLOY.md`](DEPLOY.md)  
+- Attribution: [`THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md)  

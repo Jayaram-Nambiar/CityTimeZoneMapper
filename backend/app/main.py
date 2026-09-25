@@ -40,9 +40,10 @@ app = FastAPI(
     title="City Timezone Mapper",
     description=(
         "Resolve a city + country to an IANA timezone id, with mappings for "
-        "Python zoneinfo (recommended) and pytz."
+        "Python zoneinfo (recommended) and pytz. "
+        "License: MIT. See THIRD_PARTY_NOTICES.md for dependency attribution."
     ),
-    version="1.0.0",
+    version="1.1.0",
 )
 
 _origins = _cors_origins()

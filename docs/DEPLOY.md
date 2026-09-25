@@ -12,7 +12,7 @@ One Docker service = UI + API + `/docs` + `/openapi.json`.
 1. Push the latest `main` branch to GitHub (already done if you followed the repo setup).
 2. Open [Render](https://render.com) and sign up / log in (GitHub login is easiest).
 3. Click **New** → **Blueprint**.
-4. Connect the private repo `Jayaram-Nambiar/CityTimeZoneMapper` (authorize Render if asked).
+4. Connect the GitHub repo `Jayaram-Nambiar/CityTimeZoneMapper` (authorize Render if asked).
 5. Render reads [`render.yaml`](../render.yaml) and creates a **free** web service.
 6. Click **Apply** / **Deploy**.
 7. When the deploy is live, open the service URL, for example:
@@ -34,7 +34,8 @@ Anyone with that link can use the app. API contracts stay at:
 - The free instance **sleeps after idle**. The first visit after a nap can take ~30–60 seconds.
 - Online geocoding uses **Open-Meteo → Photon → Nominatim**. Public Nominatim alone often fails from cloud IPs (the usual “works on my laptop” trap); the multi-provider chain is the real fix.
 - Offline catalog remains a last resort for major cities when every online provider is unreachable.
-- Keep the GitHub repo private if you want; Render can still deploy after you grant access.
+- Keep the GitHub repository private or public as you prefer; Render can deploy either after you grant access.
+- If the repository is public, consider whether a long-lived public demo URL is worth the abuse/rate-limit risk. Taking the demo down does not affect the open-source release.
 
 ### Redeploy after changes
 
